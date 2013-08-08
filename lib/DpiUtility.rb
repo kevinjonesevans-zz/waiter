@@ -1,13 +1,11 @@
 #!/usr/bin/env ruby
-require 'rubygems'
-require 'net/ssh'
 require 'net/http'
-require 'english'
+require 'net/ssh'
 require 'highline/import'
-require 'tk'
 require 'tkextlib/tile'
 
 module DpiUtility
+  #METATODO: migrate these to GitHub issues
   #==Confusing========================================================
   #TODO: why does the window lose focus once the script has started?
   #==Realistic=========================================================
@@ -16,6 +14,7 @@ module DpiUtility
   #TODO: use GIL for arguments/flags for all the things
       #TODO: accept the username/password as command line arguments to facilitate ease of use
   #==Future===========================================================
+  #TODO: use of a configuration file?
   #TODO: scrap jenkins, prompt for component
   #TODO: scrap fmv jenkins latest build number, look for that on target machine
   #TODO: scrap project page for IP, prompt
@@ -90,5 +89,3 @@ module DpiUtility
     end
   end
 end
-
-DpiUtility.main
