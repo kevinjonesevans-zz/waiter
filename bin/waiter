@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+require 'gli'
+
+include GLI::App
+
+program_desc 'This is a utility to monitor the build number of fmv-dashboard\'s rpm on the target machinne. Hopefully it grows to include more functionality which would help with the CI process of DPI'
+
+version Waiter::VERSION
+
+# desc 'Describe some switch here'
+# switch [:s,:switch]
+
+# desc 'Describe some flag here'
+# default_value 'the default'
+# arg_name 'The name of the argument'
+# flag [:f,:flagname]
+
+desc 'Monitor the target machine for the desired build number'
+arg_name 'First is username, second is password. Both are optional'
+command :monitor-build do |c|
+  c.desc 'Simply report build number found, do not loop every given interval until the build number is found'
+  c.switch :no-loop
+
+  c.desc 'The amount of seconds to wait in between doing the query'
+  c.default_value '60'
+  c.flag :i
+  c.action do |global_options,options,args|
+
+    # Your command logic here
+
+    # If you have any errors, just raise them
+    # raise "that command made no sense"
+    DpiUtility.main
+    puts "monitor-build command ran"
+  end
+end
+
+pre do |global,command,options,args|
+  # Pre logic here
+  # Return true to proceed; false to abort and not call the
+  # chosen command
+  # Use skips_pre before a command to skip this block
+  # on that command only
+  true
+end
+
+post do |global,command,options,args|
+  # Post logic here
+  # Use skips_post before a command to skip this
+  # block on that command only
+end
+
+on_error do |exception|
+  # Error logic here
+  # return false to skip default error handling
+  true
+end
+
+exit run(ARGV)

@@ -1,0 +1,5 @@
+= waiter
+
+Generate this with
+    waiter rdoc
+After you have described your command line interface

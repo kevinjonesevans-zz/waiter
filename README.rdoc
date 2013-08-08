@@ -1,0 +1,6 @@
+= waiter
+
+Describe your project here
+
+:include:waiter.rdoc
+
