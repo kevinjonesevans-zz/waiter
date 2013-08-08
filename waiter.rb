@@ -8,14 +8,11 @@ require 'tk'
 require 'tkextlib/tile'
 
 module DpiUtility
-  #==Confusing========================================================
   #TODO: why does the window lose focus once the script has started?
-  #==Realistic=========================================================
   #TODO: log the time so that we can give an average/stats
   #TODO: check to make sure vpn in connected and can resolve machine IP
   #TODO: use GIL for arguments/flags for all the things
-      #TODO: accept the username/password as command line arguments to facilitate ease of use
-  #==Future===========================================================
+  #TODO: accept the username/password as command line arguments to facilitate ease of use
   #TODO: scrap jenkins, prompt for component
   #TODO: scrap fmv jenkins latest build number, look for that on target machine
   #TODO: scrap project page for IP, prompt
