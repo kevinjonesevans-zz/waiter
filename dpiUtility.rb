@@ -9,10 +9,12 @@ class DpiUtility
   #==Confusing========================================================
   #TODO: why does the window lose focus once the script has started?
   #==Realistic=========================================================
+  #TODO: pass command line arguments to initialize
+  #TODO: separate out to interface called waiter and dpiUtility to actually connect/query
+  #TODO: print out time each time we check for the rpm
+  #TODO: help menu
   #TODO: log the time so that we can give an average/stats
   #TODO: check to make sure vpn in connected and can resolve machine IP
-  #TODO: use GIL for arguments/flags for all the things
-      #TODO: accept the username/password as command line arguments to facilitate ease of use
   #==Future===========================================================
   #TODO: use of a configuration file?
   #TODO: scrap jenkins, prompt for component
@@ -21,22 +23,17 @@ class DpiUtility
 
   attr_accessor(:host, :username, :password, :component, :desired_build, :connected)
 
-  def initialize(host = "10.71.20.156", username = "kjonesevans", password = nil, component = "fmv-dashboard", desired_build = -1, options = {})
-    #puts host,username,component,password,desired_build
+  def initialize(host = "10.71.20.156", username = "", password = nil, component = "fmv-dashboard", desired_build = -1, options = {})
     @host,@username,@password,@component,@desired_build = host,username,password,component,desired_build
-    #puts host,username,component,password,desired_build
     connected = false
     @start_time = Time.now
     @matches = []
   end
 
   def get_info
-    #puts self.instance_variables
-    #puts host,username,component,password,desired_build
-    username = ask("Enter username:  ") if username.nil? or username.length == 0
-    password = ask("Enter #{username}'s password:  ") { |p| p.echo = "*" } if password.nil? or password.length == 0
-    puts component
-    desired_build = ask("What build number of #{component}?  ", Integer) if desired_build.nil? or desired_build < 0
+    @username = ask("Enter username:  ") if username.nil? or username.length == 0
+    @password = ask("Enter #{username}'s password:  ") { |p| p.echo = "*" } if password.nil? or password.length == 0
+    @desired_build = ask("What build number of #{component}?  ", Integer) if desired_build.nil? or desired_build < 0
   end
 
   def post_summary
@@ -61,7 +58,6 @@ class DpiUtility
   def main
     while not connected
       get_info
-      #puts host,username,component,password,desired_build
       begin
         Net::SSH.start(host, username, :password => password) do |ssh|
           connected = true
@@ -100,5 +96,5 @@ class DpiUtility
   end
 end
 
-d = DpiUtility.new
+d = DpiUtility.new(*ARGV)
 d.main
