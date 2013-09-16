@@ -4,13 +4,14 @@ require 'net/ssh'
 require 'highline/import'
 require 'tkextlib/tile'
 require 'timeout'
+require 'io/console'
 
 class DpiUtility
   #METATODO: migrate these to GitHub issues
   #==Confusing========================================================
   #TODO: why does the window lose focus once the script has started?
   #==Realistic=========================================================
-  #TODO: make all the optional arguments apart of the options hash instead so that the order doesn't matter
+  #TODO: try again doesn't work correctly - no reprompting of credentials
   #TODO: help menu
   #TODO: log the time so that we can give an average/stats
   #TODO: separate out to interface called waiter and dpiUtility to actually connect/query
@@ -34,9 +35,16 @@ class DpiUtility
   end
 
   def get_info
+    puts "Please ensure that the VPN is connected before continuing!"
     @username = ask("Enter username:  ") if username.nil? or username.length == 0
     @password = ask("Enter #{username}'s password:  ") { |p| p.echo = "*" } if password.nil? or password.length == 0
     @desired_build = ask("What build number of #{component}?  ", Integer) if desired_build.nil? or desired_build < 0
+  end
+
+  def clear_info
+    @username = ""
+    @password = ""
+    @desired_build = -1
   end
 
   def print_help
@@ -69,49 +77,37 @@ class DpiUtility
   def main
     while not connected
       get_info
-      #begin
-        #Timeout::timeout(10) do
-          begin
-            Net::SSH.start(host, username, :password => password) do |ssh|
-              connected = true
-              n = 1
-              puts "Connected to #{host} at #{Time.now}!"
-              while @matches.empty? do
-                result = ssh.exec!("rpm -qa|grep #{component}")
-                result.lines.each do |l|
-                  match = /^.+#{component}-\d+\.\d+-(?<number>\d+).noarch$/.match(l)
-                  #puts "Found build number: #{match[:number]}"
-                  @matches << match if (match != []) and (match[:number].to_i >= desired_build)
-                  if @matches.empty?
-                    puts "\nChecking again in a minute... \nAttempt number:#{n}, Current Time:#{Time.now}\n"
-                    sleep 60
-                    n = n + 1
-                  else
-                    post_summary
-                    notify
-                  end #if
-                end #each
-              end #while
-            end #Net::SSH.start
-          rescue Net::SSH::AuthenticationFailed
-            puts "Invalid credentials."
-            again = ask("Try again? (Y/n)")  do |a|
-              a.default = "Y"
-              a.validate = /Y|N/
-              a.case = :upcase
-              a.responses[:not_valid] = a.question
-              a.responses[:ask_on_error] = ""
-            end #ask
-            if again != "N"
-              connected = false
-            else
-              connected = true
-            end #if
-          end #begin/rescue Net::SSH::AuthenticationFailed
-        #end #Timeout::timeout(10) do
-      #rescue Timeout::Error
-        #puts "Timed out trying to make a connection.\nIs your VPN connected? (If not, just go ahead and connect it, I will try again)"
-      #end #begin/Timeout::Error
+      begin
+        Net::SSH.start(host, username, :password => password) do |ssh|
+          connected = true
+          n = 1
+          puts "Connected to #{host} at #{Time.now}!"
+          while @matches.empty? do
+            result = ssh.exec!("rpm -qa|grep #{component}")
+            result.lines.each do |l|
+              match = /^.+#{component}-\d+\.\d+-(?<number>\d+).noarch$/.match(l)
+              #puts "Found build number: #{match[:number]}"
+              @matches << match if (match != []) and (match[:number].to_i >= desired_build)
+              if @matches.empty?
+                puts "\nFound build number #{match[:number]}. Checking again in a minute... \nAttempt number:#{n}, Current Time:#{Time.now}\n"
+                sleep 60
+                n = n + 1
+              else
+                post_summary
+                notify
+              end #if
+            end #each
+          end #while
+        end #Net::SSH.start
+      rescue Net::SSH::AuthenticationFailed
+        clear_info
+        puts "Invalid credentials.\nTry again?(y/n)"
+        again = STDIN.getch
+        again.upcase!
+        if again == "N"
+          exit
+        end #if
+      end #begin/rescue Net::SSH::AuthenticationFailed
     end #while not connected
   end#main
 end#class
