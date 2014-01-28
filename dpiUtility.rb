@@ -24,7 +24,7 @@ class DpiUtility
   attr_accessor(:host, :username, :password, :component, :desired_build, :connected)
 
   def initialize(options = {})
-    @host = options.fetch(:host) { "10.71.20.156" } #this is the default dpiservices machine
+    @host = options.fetch(:host) { "0.0.0.0" }
     @username = options.fetch(:username) { "" }
     @password = options.fetch(:password) { nil }
     @component = options.fetch(:component) { "fmv-dashboard" }
